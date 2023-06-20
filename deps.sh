@@ -74,23 +74,29 @@ else
     REQUIRED_UTILS="sudo $REQUIRED_UTILS"
 fi
 
+function install_depot_tools
+{
+    git clone --quiet --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools
+    export PATH=$PATH:$PWD/depot_tools
+}
+
 function install_yaffshiv
 {
-    git clone --quiet --depth 1 --branch "master" https://github.com/devttys0/yaffshiv
+    git retry -- clone --quiet --depth 1 https://github.com/devttys0/yaffshiv
     (cd yaffshiv && $SUDO $PYTHON setup.py install)
     $SUDO rm -rf yaffshiv
 }
 
 function install_sasquatch
 {
-    git clone --quiet --depth 1 --branch "master" https://github.com/devttys0/sasquatch
+    git retry -- clone --quiet --depth 1 https://github.com/devttys0/sasquatch
     (cd sasquatch && $SUDO ./build.sh)
     $SUDO rm -rf sasquatch
 }
 
 function install_jefferson
 {
-    git clone --quiet --depth 1 --branch "master" https://github.com/sviehb/jefferson
+    git retry -- clone --quiet --depth 1 https://github.com/sviehb/jefferson
     (cd jefferson && $SUDO $PYTHON -mpip install -r requirements.txt && $SUDO $PYTHON setup.py install)
     $SUDO rm -rf jefferson
 }
@@ -102,7 +108,7 @@ function install_cramfstools
   INSTALL_LOCATION=/usr/local/bin
 
   # https://github.com/torvalds/linux/blob/master/fs/cramfs/README#L106
-  git clone --quiet --depth 1 --branch "master" https://github.com/npitre/cramfs-tools
+  git retry -- clone --quiet --depth 1 https://github.com/npitre/cramfs-tools
   # There is no "make install"
   (cd cramfs-tools \
   && make \
@@ -115,8 +121,9 @@ function install_cramfstools
 
 function install_ubireader
 {
-    git clone --quiet --depth 1 --branch "master" https://github.com/jrspruitt/ubi_reader
-    (cd ubi_reader && $SUDO $PYTHON setup.py install)
+    git retry -- clone --quiet --depth 1 https://github.com/jrspruitt/ubi_reader
+    # (cd ubi_reader && $SUDO $PYTHON setup.py install)
+    (cd ubi_reader && poetry install)
     $SUDO rm -rf ubi_reader
 }
 
@@ -236,7 +243,8 @@ if [ $? -ne 0 ]
     echo "Package installation failed: $PKG_CANDIDATES"
     exit 1
 fi
-install_pip_package "setuptools matplotlib capstone pycryptodome gnupg tk"
+install_pip_package "setuptools matplotlib capstone pycryptodome gnupg tk poetry"
+install_depot_tools
 install_sasquatch
 install_yaffshiv
 install_jefferson
